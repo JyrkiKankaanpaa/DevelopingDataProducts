@@ -1,0 +1,84 @@
+---
+title: "The Kcal Consuming Simulator Documentation"
+author: "Jyrki Kankaanpaa"
+date: "Sunday, May 24, 2015"
+output: html_document
+---
+
+This is documentation of the Shiny app, named The Kcal Consuming Simulator, which is done by Jyrki Kankaanpaa.
+Shiny app is  done for Coursera Develop Data Product course.
+
+# Introduction
+
+The world population is  gaining more and more weight, year by year. The obesity starts to be a big problem all-over the world <http://en.wikipedia.org/wiki/Obesity>. With this small Shiny app, The Kcal Consuming Simulator, you can test how changing of the population average BMI Body Mass Index <http://en.wikipedia.org/wiki/Body_mass_index> effects total kcal consuming and food costs, among the Finnish men age 25-74.
+
+## Application And Data
+
+This app uses simulated base data which is made by rnorm function with parameters taken from [FINRISKI 2012 health study] (https://www.thl.fi/fi/tutkimus-ja-asiantuntijatyo/vaestotutkimukset/finriski-tutkimus/the-national-finrisk-study). FINRISK is Finnish population survey on risk factors on chronic, noncommunicable diseases. The study has been carried out every 5th year since 1972.Detailed information about the study you can find from the link above.
+
+For this Coursera course exercise I took parameters for next variables from FINRISK study.
+
+1. Height (men age 25-74, mean = 177, SD = 7)
+2. BMI (men age 25-74, mean = 27.1, SD = 4,3)
+3. Age (used same year frame than in the study 25 to 74, mean = 49.5, SD = 12.2) 
+
+
+The next variables are calculated using those 3 variables.
+
+1. Weight in kg
+2. kcal (theoretical kcal consuming at rest BMR)
+
+Weight calculation based on BMI and Height and calculated by following formula:
+(height in cm /100) * (height in cm /100) * BMI 
+
+Kcal consuming based on Basal Metabolic Rate <http://en.wikipedia.org/wiki/Basal_metabolic_rate>  Harris-Benedict equation.
+
+For men.
+Weight * 13.7516 + Height * 5.0033 + Age * 6.755 + 66.4730
+
+```{r}
+#creating simulated sample data with parameters which based on FINRISK2012 study
+set.seed(1234)
+sample_n <-5000
+bmi_mean<-27.1
+headers<-c("BMI","kcal","Height","Weight","Age","xBMI","xkcal")
+dataBMI <-round(rnorm(sample_n, mean = bmi_mean, sd = 4.4),1)
+dataHeight <-round(rnorm(sample_n, mean = 178, sd = 7))
+dataAge <-round(rnorm(sample_n, mean = 49.5, sd = 12.2))
+BMIfactor<-(dataHeight/100) * (dataHeight/100)
+dataWeight <-round((dataBMI  * BMIfactor),2)
+
+dataKcal <- round((dataWeight * 13.7516 + dataHeight * 5.0033 + dataAge * 6.755 + 66.4730))
+xKCAL <-dataKcal
+xBMI <-dataBMI
+
+data <- data.frame(dataBMI,dataKcal,dataHeight,dataWeight,dataAge,xBMI,xKCAL)
+colnames(data) <- headers
+
+summary(data)
+```
+
+The user can manipulate next variables.
+
+1. xBMI (user manipulated mean of BMI)
+2. xBMIsd (user manipulated mean of BMI)
+3. Population (which amount of people calculations will do)
+4. Average costs per kcal
+
+The app prints out following calculated values
+1. Original total kcal consumin in population (mean of kcal * Population)
+2. Changed total kcal consumin in population  (mean of xkcal * Population)
+3. Original total kcal costs in population (mean of kcal * Population *Cost per KCAL)
+4. Changed total kcal costs in population (mean of xkcal * Population * Cost per KCAL)
+5. Costs Difference (3. - 4.)
+
+The app also prints out ggplot about kcal consuming densities and means of both original kcal consuming and user manipulated kcal consuming.
+
+## How To Use?
+
+Using the Kcal Consuming Simulator app is very easy. Just change simulation selections at the left side panel and you can see results immediately in the right side of the simulation selection panel.The density plot reacts immediately when user manipulate BMI or BMI sd.
+
+## Ideas For Future Improvements
+
+While doing this exercise I realized how huge effect a human weight causes for very many things. It would be interesting to study what kind of effect population weight causes for example plane travelling, consuming of fabric which we use to make cloths, food industry etc.
+
